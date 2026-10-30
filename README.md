@@ -87,7 +87,3 @@ Authenticate Wrangler with the Cloudflare account that will own the Worker, then
 npx wrangler login
 npm run deploy
 ```
-
-The `models-list` Worker and its `modelslist.blp.sh` Custom Domain are configured in `wrangler.jsonc`. Following the [Cloudflare Custom Domains documentation](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/), the route uses `custom_domain: true`, so deployment creates the required DNS record and certificate automatically. The parent `blp.sh` zone must remain active in the same Cloudflare account.
-
-The Custom Domain routes every path on `modelslist.blp.sh` to this Worker; the application itself only serves `GET /`. Wrangler prints deployment details after a successful deployment.
