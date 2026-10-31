@@ -1,5 +1,27 @@
+export interface ModelArchitecture {
+  input_modalities: string[];
+  output_modalities: string[];
+}
+
+export interface ModelTopProvider {
+  max_completion_tokens: number | null;
+}
+
+export interface ModelReasoning {
+  mandatory: boolean;
+  default_enabled: boolean;
+  supported_efforts: string[];
+  default_effort: string | null;
+}
+
 export interface ModelDescriptor {
   id: string;
+  name: string;
+  architecture: ModelArchitecture;
+  context_length: number;
+  top_provider: ModelTopProvider;
+  reasoning: ModelReasoning;
+  reasoning_options: unknown[];
   created?: number;
 }
 
@@ -10,7 +32,7 @@ interface StaticCatalog {
 
 interface AutomaticCatalog {
   type: "automatic";
-  source: "openrouter" | "models-dev" | "nvidia-featured";
+  source: "openrouter" | "models-dev";
   url: string;
   providerKey?: "opencode" | "opencode-go";
 }
@@ -19,7 +41,7 @@ export type ModelCatalog = StaticCatalog | AutomaticCatalog;
 
 const staticCatalog = (): StaticCatalog => ({ type: "static", models: [] });
 
-// Static catalogs are intentionally empty until their model IDs are supplied.
+// Static catalogs stay empty until complete model metadata is supplied.
 // models.dev is used only for the two OpenCode-owned catalogs below.
 export const modelCatalogs: Readonly<Record<string, ModelCatalog>> = {
   minimax: staticCatalog(),
@@ -52,9 +74,5 @@ export const modelCatalogs: Readonly<Record<string, ModelCatalog>> = {
   },
   longcat: staticCatalog(),
   "krafton-raon": staticCatalog(),
-  "nvidia-nim": {
-    type: "automatic",
-    source: "nvidia-featured",
-    url: "https://assets.ngc.nvidia.com/products/api-catalog/featured-models.json",
-  },
+  "nvidia-nim": staticCatalog(),
 };

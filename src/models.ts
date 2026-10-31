@@ -1,17 +1,38 @@
 import type { ModelCatalog, ModelDescriptor } from "./model-catalogs";
 
-interface OpenAIModel {
-  id: string;
-  object: "model";
-  created: number;
-  owned_by: string;
-}
-
 const CACHE_SECONDS = 300;
 const UPSTREAM_TIMEOUT_MS = 10_000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function requiredRecord(value: unknown, label: string): Record<string, unknown> {
+  if (!isRecord(value)) throw new Error(`${label} must be an object.`);
+  return value;
+}
+
+function requiredString(value: unknown, label: string): string {
+  if (typeof value !== "string" || !value) {
+    throw new Error(`${label} must be a non-empty string.`);
+  }
+  return value;
+}
+
+function requiredNumber(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative finite number.`);
+  }
+  return value;
+}
+
+function requiredStringArray(value: unknown, label: string): string[] {
+  if (!Array.isArray(value)) throw new Error(`${label} must be an array.`);
+  return value.map((entry, index) => requiredString(entry, `${label}[${index}]`));
+}
+
+function nullableNumber(value: unknown, label: string): number | null {
+  return value === null || value === undefined ? null : requiredNumber(value, label);
 }
 
 function uniqueModels(models: ModelDescriptor[]): ModelDescriptor[] {
@@ -23,48 +44,108 @@ function uniqueModels(models: ModelDescriptor[]): ModelDescriptor[] {
 }
 
 function parseOpenRouter(value: unknown): ModelDescriptor[] {
-  if (!isRecord(value) || !Array.isArray(value.data)) {
-    throw new Error("OpenRouter returned an invalid model list.");
-  }
+  const root = requiredRecord(value, "OpenRouter response");
+  if (!Array.isArray(root.data)) throw new Error("OpenRouter data must be an array.");
 
-  return value.data.map((model) => {
-    if (!isRecord(model) || typeof model.id !== "string" || !model.id) {
-      throw new Error("OpenRouter returned a model without a valid ID.");
-    }
+  return root.data.map((entry, index) => {
+    const model = requiredRecord(entry, `OpenRouter model ${index}`);
+    const architecture = requiredRecord(model.architecture, `${model.id} architecture`);
+    const topProvider = requiredRecord(model.top_provider, `${model.id} top_provider`);
+    const reasoning = isRecord(model.reasoning) ? model.reasoning : {};
+
     return {
-      id: model.id,
-      ...(typeof model.created === "number" ? { created: model.created } : {}),
+      id: requiredString(model.id, "OpenRouter model ID"),
+      name: requiredString(model.name, `${model.id} name`),
+      architecture: {
+        input_modalities: requiredStringArray(
+          architecture.input_modalities,
+          `${model.id} input modalities`,
+        ),
+        output_modalities: requiredStringArray(
+          architecture.output_modalities,
+          `${model.id} output modalities`,
+        ),
+      },
+      context_length: requiredNumber(model.context_length, `${model.id} context length`),
+      top_provider: {
+        max_completion_tokens: nullableNumber(
+          topProvider.max_completion_tokens,
+          `${model.id} maximum output tokens`,
+        ),
+      },
+      reasoning: {
+        mandatory: reasoning.mandatory === true,
+        default_enabled: reasoning.default_enabled === true,
+        supported_efforts: requiredStringArray(
+          reasoning.supported_efforts ?? [],
+          `${model.id} reasoning efforts`,
+        ),
+        default_effort:
+          reasoning.default_effort === null || reasoning.default_effort === undefined
+            ? null
+            : requiredString(reasoning.default_effort, `${model.id} default effort`),
+      },
+      reasoning_options: [],
+      ...(typeof model.created === "number" && Number.isFinite(model.created)
+        ? { created: model.created }
+        : {}),
     };
   });
 }
 
 function parseModelsDev(value: unknown, providerKey: string): ModelDescriptor[] {
-  if (!isRecord(value) || !isRecord(value[providerKey])) {
-    throw new Error(`models.dev has no ${providerKey} catalog.`);
-  }
-  const models = value[providerKey].models;
-  if (!isRecord(models)) {
-    throw new Error(`models.dev returned an invalid ${providerKey} model list.`);
-  }
+  const root = requiredRecord(value, "models.dev response");
+  const provider = requiredRecord(root[providerKey], `models.dev ${providerKey}`);
+  const models = requiredRecord(provider.models, `models.dev ${providerKey} models`);
 
-  return Object.values(models).flatMap((model) => {
-    if (!isRecord(model) || typeof model.id !== "string" || !model.id) {
-      throw new Error(`models.dev returned a ${providerKey} model without a valid ID.`);
+  return Object.values(models).flatMap((entry) => {
+    const model = requiredRecord(entry, `models.dev ${providerKey} model`);
+    const id = requiredString(model.id, `models.dev ${providerKey} model ID`);
+    if (model.status === "deprecated") return [];
+
+    const modalities = requiredRecord(model.modalities, `${id} modalities`);
+    const limit = requiredRecord(model.limit, `${id} limits`);
+    const reasoningOptions = model.reasoning_options ?? [];
+    if (!Array.isArray(reasoningOptions)) {
+      throw new Error(`${id} reasoning_options must be an array.`);
     }
-    return model.status === "deprecated" ? [] : [{ id: model.id }];
-  });
-}
-
-function parseNvidiaFeatured(value: unknown): ModelDescriptor[] {
-  if (!isRecord(value) || !Array.isArray(value["featured-models"])) {
-    throw new Error("NVIDIA returned an invalid featured model list.");
-  }
-
-  return value["featured-models"].map((model) => {
-    if (!isRecord(model) || typeof model.model !== "string" || !model.model) {
-      throw new Error("NVIDIA returned a featured model without a valid ID.");
-    }
-    return { id: model.model };
+    const effortOption = reasoningOptions.find(
+      (option) => isRecord(option) && option.type === "effort",
+    );
+    const efforts = isRecord(effortOption)
+      ? requiredStringArray(effortOption.values ?? [], `${id} reasoning efforts`)
+      : [];
+    const toggleOption = reasoningOptions.find(
+      (option) => isRecord(option) && option.type === "toggle",
+    );
+    return [
+      {
+        id,
+        name: requiredString(model.name, `${id} name`),
+        architecture: {
+          input_modalities: requiredStringArray(modalities.input, `${id} input modalities`),
+          output_modalities: requiredStringArray(
+            modalities.output,
+            `${id} output modalities`,
+          ),
+        },
+        context_length: requiredNumber(limit.context, `${id} context length`),
+        top_provider: {
+          max_completion_tokens:
+            limit.output === undefined ? null : requiredNumber(limit.output, `${id} output limit`),
+        },
+        reasoning: {
+          mandatory:
+            model.reasoning === true &&
+            toggleOption === undefined &&
+            !efforts.includes("none"),
+          default_enabled: model.reasoning === true,
+          supported_efforts: efforts,
+          default_effort: null,
+        },
+        reasoning_options: reasoningOptions,
+      },
+    ];
   });
 }
 
@@ -89,20 +170,20 @@ async function fetchModels(
     case "models-dev":
       if (!catalog.providerKey) throw new Error("Missing models.dev provider key.");
       return uniqueModels(parseModelsDev(body, catalog.providerKey));
-    case "nvidia-featured":
-      return uniqueModels(parseNvidiaFeatured(body));
   }
 }
 
 function modelListResponse(models: ModelDescriptor[], providerSlug: string): Response {
-  const data: OpenAIModel[] = models.map(({ id, created }) => ({
-    id,
-    object: "model",
-    created: created ?? 0,
-    owned_by: providerSlug,
-  }));
   return Response.json(
-    { object: "list", data },
+    {
+      object: "list",
+      data: models.map((model) => ({
+        ...model,
+        object: "model",
+        created: model.created ?? 0,
+        owned_by: providerSlug,
+      })),
+    },
     { headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}` } },
   );
 }

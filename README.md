@@ -37,17 +37,37 @@ The actual response contains all records from `src/providers.ts`; the record abo
 
 Unknown paths return `404 Not Found`. Methods other than `GET` return `405 Method Not Allowed`.
 
-
 ## Model catalogs
 
-`GET /{provider-slug}/models` returns an OpenAI-compatible model list. For example, `GET /openrouter/models` returns:
+`GET /{provider-slug}/models` returns an OpenAI-compatible model list enriched with the metadata needed to select and call a model. Every returned model has these fields:
+
+- `id` and `name`: Model identifier and display name.
+- `architecture.input_modalities` and `architecture.output_modalities`: Multimodal input and output support.
+- `context_length`: Context window in tokens.
+- `top_provider.max_completion_tokens`: Maximum output tokens, or `null` when unknown.
+- `reasoning`: `mandatory`, `default_enabled`, `supported_efforts`, and `default_effort`. A model without reasoning options has `supported_efforts: []` and `default_effort: null`.
+- `reasoning_options`: The original OpenCode reasoning controls, including effort values, toggles, and token budgets. OpenRouter entries use an empty array because its API provides normalized reasoning settings instead.
 
 ```json
 {
   "object": "list",
   "data": [
     {
-      "id": "openai/gpt-example",
+      "id": "example/model",
+      "name": "Example Model",
+      "architecture": {
+        "input_modalities": ["text", "image"],
+        "output_modalities": ["text"]
+      },
+      "context_length": 128000,
+      "top_provider": { "max_completion_tokens": 16384 },
+      "reasoning": {
+        "mandatory": false,
+        "default_enabled": true,
+        "supported_efforts": ["low", "high"],
+        "default_effort": "high"
+      },
+      "reasoning_options": [],
       "object": "model",
       "created": 1700000000,
       "owned_by": "openrouter"
@@ -56,18 +76,17 @@ Unknown paths return `404 Not Found`. Methods other than `GET` return `405 Metho
 }
 ```
 
-The example model ID is illustrative. `created` is `0` when the source does not provide a timestamp, and `owned_by` is the provider slug. A source failure returns HTTP `502` with a JSON error and is not cached. Automatic responses are cached per Cloudflare data center for five minutes. models.dev entries marked `deprecated` are excluded.
+This example is illustrative, not a real model record. A source failure returns HTTP `502` with a JSON error and is not cached. Automatic responses are cached per Cloudflare data center for five minutes.
 
-Automatic catalogs use only these public sources:
+Only three catalogs are automatic:
 
 | Provider | Source |
 | --- | --- |
 | OpenRouter | `https://openrouter.ai/api/v1/models` |
-| OpenCode Zen | Only the `opencode` entry in `https://models.dev/api.json` |
-| OpenCode Go | Only the `opencode-go` entry in `https://models.dev/api.json` |
-| NVIDIA NIM | `https://assets.ngc.nvidia.com/products/api-catalog/featured-models.json` |
+| OpenCode Zen | Only the `opencode` entry in `https://models.dev/api.json`, excluding deprecated models |
+| OpenCode Go | Only the `opencode-go` entry in `https://models.dev/api.json`, excluding deprecated models |
 
-**models.dev is deliberately not used for any other provider.** The other 13 providers use static catalogs in `src/model-catalogs.ts`; these initially return `{ "object": "list", "data": [] }` until model IDs are supplied. Source adapters and OpenAI response conversion live in `src/models.ts`.
+**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. It and the other 13 providers are static/manual catalogs in `src/model-catalogs.ts`; they return an empty list until complete metadata is supplied. No incomplete model records are invented to fill them.
 
 ## Provider data
 

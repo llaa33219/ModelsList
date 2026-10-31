@@ -23,12 +23,27 @@ describe("model catalogs", () => {
     );
   });
 
-  it("returns OpenRouter models in OpenAI format", async () => {
+  it("returns complete OpenRouter model metadata", async () => {
     const sourceFetch: ModelSourceFetch = async () =>
       Response.json({
         data: [
-          { id: "example/model", created: 1700000000 },
-          { id: "example/model", created: 1700000000 },
+          {
+            id: "example/model",
+            name: "Example Model",
+            created: 1700000000,
+            context_length: 128000,
+            architecture: {
+              input_modalities: ["text", "image"],
+              output_modalities: ["text"],
+            },
+            top_provider: { max_completion_tokens: 16384 },
+            reasoning: {
+              mandatory: false,
+              default_enabled: true,
+              supported_efforts: ["low", "high"],
+              default_effort: "high",
+            },
+          },
         ],
       });
 
@@ -46,23 +61,47 @@ describe("model catalogs", () => {
       data: [
         {
           id: "example/model",
+          name: "Example Model",
           object: "model",
           created: 1700000000,
           owned_by: "openrouter",
+          context_length: 128000,
+          architecture: {
+            input_modalities: ["text", "image"],
+            output_modalities: ["text"],
+          },
+          top_provider: { max_completion_tokens: 16384 },
+          reasoning: {
+            mandatory: false,
+            default_enabled: true,
+            supported_efforts: ["low", "high"],
+            default_effort: "high",
+          },
+          reasoning_options: [],
         },
       ],
     });
   });
 
   it.each([
-    ["opencode-zen", "opencode", "Zen Model"],
-    ["opencode-go", "opencode-go", "Go Model"],
-  ])("only reads the %s catalog from models.dev", async (slug, key, id) => {
+    ["opencode-zen", "opencode", "zen-model"],
+    ["opencode-go", "opencode-go", "go-model"],
+  ])("converts only the %s models.dev catalog", async (slug, key, id) => {
     const sourceFetch: ModelSourceFetch = async () =>
       Response.json({
         [key]: {
           models: {
-            [id]: { id },
+            [id]: {
+              id,
+              name: "Example Model",
+              modalities: { input: ["text", "image"], output: ["text"] },
+              limit: { context: 200000, output: 32000 },
+              reasoning: true,
+              reasoning_options: [
+                { type: "effort", values: ["low", "high"] },
+                { type: "budget_tokens", min: 1024 },
+              ],
+            },
             "retired-model": { id: "retired-model", status: "deprecated" },
           },
         },
@@ -80,14 +119,107 @@ describe("model catalogs", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       object: "list",
-      data: [{ id, object: "model", created: 0, owned_by: slug }],
+      data: [
+        {
+          id,
+          name: "Example Model",
+          object: "model",
+          created: 0,
+          owned_by: slug,
+          architecture: {
+            input_modalities: ["text", "image"],
+            output_modalities: ["text"],
+          },
+          context_length: 200000,
+          top_provider: { max_completion_tokens: 32000 },
+          reasoning: {
+            mandatory: true,
+            default_enabled: true,
+            supported_efforts: ["low", "high"],
+            default_effort: null,
+          },
+          reasoning_options: [
+            { type: "effort", values: ["low", "high"] },
+            { type: "budget_tokens", min: 1024 },
+          ],
+        },
+      ],
     });
   });
 
-  it("reads NVIDIA featured models from the official asset", async () => {
+  it("normalizes optional, disabled, and toggle-only reasoning without invented efforts", async () => {
     const sourceFetch: ModelSourceFetch = async () =>
-      Response.json({ "featured-models": [{ model: "nvidia/example" }] });
+      Response.json({
+        opencode: {
+          models: {
+            optional: {
+              id: "optional",
+              name: "Optional Reasoning",
+              modalities: { input: ["text"], output: ["text"] },
+              limit: { context: 1000, output: 100 },
+              reasoning: true,
+              reasoning_options: [{ type: "effort", values: ["none", "high"] }],
+            },
+            disabled: {
+              id: "disabled",
+              name: "No Reasoning",
+              modalities: { input: ["text"], output: ["text"] },
+              limit: { context: 1000, output: 100 },
+              reasoning: false,
+            },
+            toggle: {
+              id: "toggle",
+              name: "Toggle Reasoning",
+              modalities: { input: ["text"], output: ["text"] },
+              limit: { context: 1000 },
+              reasoning: true,
+              reasoning_options: [{ type: "toggle" }],
+            },
+          },
+        },
+      });
 
+    const response = await getModelsResponse(
+      request,
+      modelCatalogs["opencode-zen"],
+      "opencode-zen",
+      sourceFetch,
+      cache as unknown as Cache,
+    );
+    const body = (await response.json()) as {
+      data: Array<{
+        reasoning: unknown;
+        top_provider: { max_completion_tokens: number | null };
+      }>;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.data.map(({ reasoning }) => reasoning)).toEqual([
+      {
+        mandatory: false,
+        default_enabled: true,
+        supported_efforts: ["none", "high"],
+        default_effort: null,
+      },
+      {
+        mandatory: false,
+        default_enabled: false,
+        supported_efforts: [],
+        default_effort: null,
+      },
+      {
+        mandatory: false,
+        default_enabled: true,
+        supported_efforts: [],
+        default_effort: null,
+      },
+    ]);
+    expect(body.data[2].top_provider.max_completion_tokens).toBeNull();
+  });
+
+  it("keeps NVIDIA NIM static without fetching the featured list", async () => {
+    expect(modelCatalogs["nvidia-nim"]).toEqual({ type: "static", models: [] });
+    const sourceFetch = vi.fn();
     const response = await getModelsResponse(
       request,
       modelCatalogs["nvidia-nim"],
@@ -97,12 +229,8 @@ describe("model catalogs", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      object: "list",
-      data: [
-        { id: "nvidia/example", object: "model", created: 0, owned_by: "nvidia-nim" },
-      ],
-    });
+    expect(await response.json()).toEqual({ object: "list", data: [] });
+    expect(sourceFetch).not.toHaveBeenCalled();
   });
 
   it("returns an empty static catalog without external requests", async () => {
