@@ -23,7 +23,7 @@ export interface Provider {
   modelLists?: ModelListEndpoint[];
 }
 
-export const providers: readonly Provider[] = [
+const providerEndpoints: readonly Provider[] = [
   {
     name: "MiniMax",
     slug: "minimax",
@@ -225,3 +225,16 @@ export const providers: readonly Provider[] = [
     ],
   },
 ];
+
+// ModelsList-curated endpoints use OpenAI-compatible envelopes with additional
+// model metadata. Keep the original provider endpoints alongside them.
+export const providers: readonly Provider[] = providerEndpoints.map((provider) => ({
+  ...provider,
+  modelLists: [
+    ...(provider.modelLists ?? []),
+    {
+      url: `https://modelslist.blp.sh/${provider.slug}/models`,
+      format: "modelslist",
+    },
+  ],
+}));

@@ -45,6 +45,7 @@ describe("provider directory", () => {
       modelLists: [
         { url: "https://api.minimax.io/anthropic/v1/models", format: "anthropic" },
         { url: "https://api.minimax.io/v1/models", format: "openai" },
+        { url: "https://modelslist.blp.sh/minimax/models", format: "modelslist" },
       ],
     });
     expect(providers[13]).toEqual({
@@ -57,8 +58,18 @@ describe("provider directory", () => {
       ],
       modelLists: [
         { url: "https://opencode.ai/zen/go/v1/models", format: "openai" },
+        { url: "https://modelslist.blp.sh/opencode-go/models", format: "modelslist" },
       ],
     });
+  });
+
+  it("labels the ModelsList-curated endpoint for every provider", () => {
+    for (const provider of providers) {
+      expect(provider.modelLists).toContainEqual({
+        url: `https://modelslist.blp.sh/${provider.slug}/models`,
+        format: "modelslist",
+      });
+    }
   });
 
   it("returns 404 for unknown paths", async () => {
@@ -106,6 +117,10 @@ describe("newly added providers", () => {
     ]);
     expect(provider?.modelLists).toEqual([
       { url: `${base}/models`, format: "openai" },
+      {
+        url: `https://modelslist.blp.sh/${provider?.slug}/models`,
+        format: "modelslist",
+      },
     ]);
   });
 });
