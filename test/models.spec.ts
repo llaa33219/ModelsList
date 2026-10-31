@@ -23,6 +23,14 @@ describe("model catalogs", () => {
     );
   });
 
+  it("contains 86 confirmed static models split by provider", () => {
+    const staticCatalogs = Object.values(modelCatalogs).filter(
+      (catalog) => catalog.type === "static",
+    );
+    expect(staticCatalogs).toHaveLength(14);
+    expect(staticCatalogs.flatMap((catalog) => catalog.models)).toHaveLength(86);
+  });
+
   it("returns complete OpenRouter model metadata", async () => {
     const sourceFetch: ModelSourceFetch = async () =>
       Response.json({
@@ -218,7 +226,7 @@ describe("model catalogs", () => {
   });
 
   it("keeps NVIDIA NIM static without fetching the featured list", async () => {
-    expect(modelCatalogs["nvidia-nim"]).toEqual({ type: "static", models: [] });
+    expect(modelCatalogs["nvidia-nim"].type).toBe("static");
     const sourceFetch = vi.fn();
     const response = await getModelsResponse(
       request,
@@ -229,11 +237,11 @@ describe("model catalogs", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ object: "list", data: [] });
+    expect(((await response.json()) as { data: unknown[] }).data).toHaveLength(20);
     expect(sourceFetch).not.toHaveBeenCalled();
   });
 
-  it("returns an empty static catalog without external requests", async () => {
+  it("returns a populated static catalog without external requests", async () => {
     const sourceFetch = vi.fn();
     const response = await getModelsResponse(
       request,
@@ -244,7 +252,7 @@ describe("model catalogs", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ object: "list", data: [] });
+    expect(((await response.json()) as { data: unknown[] }).data).toHaveLength(2);
     expect(sourceFetch).not.toHaveBeenCalled();
   });
 

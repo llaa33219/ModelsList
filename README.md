@@ -86,7 +86,11 @@ Only three catalogs are automatic:
 | OpenCode Zen | Only the `opencode` entry in `https://models.dev/api.json`, excluding deprecated models |
 | OpenCode Go | Only the `opencode-go` entry in `https://models.dev/api.json`, excluding deprecated models |
 
-**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. It and the other 13 providers are static/manual catalogs in `src/model-catalogs.ts`; they return an empty list until complete metadata is supplied. No incomplete model records are invented to fill them.
+**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. It and the other 13 providers use static/manual catalogs split into provider-specific files under `src/model-data/`.
+
+The static catalogs are built from `provider_models_slim.json`, which contains 201 source rows. Only rows marked `사용 가능` with complete, recognized metadata are included: 86 models across 14 providers. Records marked unsupported, deprecated, scheduled for retirement, indirectly auto-routed, needing verification, or containing `미확인`/`미공개` metadata are excluded. Source-only groups without registered provider endpoints, MiniMax Token Plan and Alibaba Token Plan Team, are not silently assigned to other providers.
+
+Each static file exports `ModelDescriptor[]` from `src/model-data/<provider-slug>.ts`. The model ID is used as the display name because the source has no separate display-name field; output modality is `text` for these text LLM records. Explicit reasoning efforts, on/off toggles, token budgets, mandatory/default behavior, and documented effort aliases are preserved without inventing unknown defaults. The source file remains unchanged for auditing and future imports.
 
 ## Provider data
 
