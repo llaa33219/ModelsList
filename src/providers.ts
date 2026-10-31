@@ -14,6 +14,7 @@ export interface ProviderFormat {
 export interface ModelListEndpoint {
   url: string;
   format: CompatibilityFormat;
+  source: "official" | "modelslist";
 }
 
 export interface Provider {
@@ -23,7 +24,11 @@ export interface Provider {
   modelLists?: ModelListEndpoint[];
 }
 
-const providerEndpoints: readonly Provider[] = [
+type ProviderEndpoint = Omit<Provider, "modelLists"> & {
+  modelLists?: Array<Omit<ModelListEndpoint, "source">>;
+};
+
+const providerEndpoints: readonly ProviderEndpoint[] = [
   {
     name: "MiniMax",
     slug: "minimax",
@@ -231,10 +236,14 @@ const providerEndpoints: readonly Provider[] = [
 export const providers: readonly Provider[] = providerEndpoints.map((provider) => ({
   ...provider,
   modelLists: [
-    ...(provider.modelLists ?? []),
+    ...(provider.modelLists ?? []).map((endpoint) => ({
+      ...endpoint,
+      source: "official" as const,
+    })),
     {
       url: `https://modelslist.blp.sh/${provider.slug}/models`,
-      format: "modelslist",
+      format: "openai",
+      source: "modelslist" as const,
     },
   ],
 }));

@@ -26,18 +26,20 @@ The provider directory is available at **https://modelslist.blp.sh/**. The sourc
     "modelLists": [
       {
         "url": "https://api.example.com/v1/models",
-        "format": "openai"
+        "format": "openai",
+        "source": "official"
       },
       {
         "url": "https://modelslist.blp.sh/example-provider/models",
-        "format": "modelslist"
+        "format": "openai",
+        "source": "modelslist"
       }
     ]
   }
 ]
 ```
 
-The actual response contains all records from `src/providers.ts`; the record above illustrates the response shape only. Entries with `format: "modelslist"` are **ModelsList-curated endpoints**, not official provider APIs. They use an OpenAI-compatible list envelope with additional curated model metadata. Official provider model-list URLs remain listed separately with their original compatibility formats.
+The actual response contains all records from `src/providers.ts`; the record above illustrates the response shape only. Entries with `source: "modelslist"` are **ModelsList-curated endpoints**, not official provider APIs. They use `format: "openai"` with additional curated model metadata. Entries with `source: "official"` are official provider endpoints and retain their original compatibility formats.
 
 Unknown paths return `404 Not Found`. Methods other than `GET` return `405 Method Not Allowed`.
 
@@ -111,6 +113,7 @@ Edit `src/providers.ts` to add records to the `providers` array. Each record has
   modelLists?: Array<{
     url: string;
     format: string;
+    source: "official" | "modelslist";
   }>;
 }
 ```
@@ -118,9 +121,9 @@ Edit `src/providers.ts` to add records to the `providers` array. Each record has
 - `name`: The provider's display name.
 - `slug`: The stable identifier used by the model catalog endpoint.
 - `formats`: One entry for each supported API compatibility format and its base URL.
-- `modelLists`: Optional model-list endpoints and their compatibility formats. Multiple endpoints can be supplied for providers that support more than one format.
+- `modelLists`: Optional model-list endpoints with compatibility format and provenance. `source` distinguishes `official` provider URLs from ModelsList-curated URLs; it does not change the wire format. Multiple endpoints can be supplied for providers that support more than one format.
 
-Standard provider format identifiers are `openai`, `anthropic`, `openai-responses`, `google-genai`, and `typesafe`. The additional `modelslist` identifier marks this service's curated model-list endpoints. Other format identifiers are also accepted, so custom formats can use their own names.
+Standard provider format identifiers are `openai`, `anthropic`, `openai-responses`, `google-genai`, and `typesafe`. ModelsList-curated endpoints also use `openai`; their separate `source` field identifies their provenance. Other format identifiers are accepted for custom provider formats.
 
 ## Local development
 

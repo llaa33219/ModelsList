@@ -43,9 +43,9 @@ describe("provider directory", () => {
         { format: "anthropic", baseUrl: "https://api.minimax.io/anthropic" },
       ],
       modelLists: [
-        { url: "https://api.minimax.io/anthropic/v1/models", format: "anthropic" },
-        { url: "https://api.minimax.io/v1/models", format: "openai" },
-        { url: "https://modelslist.blp.sh/minimax/models", format: "modelslist" },
+        { url: "https://api.minimax.io/anthropic/v1/models", format: "anthropic", source: "official" },
+        { url: "https://api.minimax.io/v1/models", format: "openai", source: "official" },
+        { url: "https://modelslist.blp.sh/minimax/models", format: "openai", source: "modelslist" },
       ],
     });
     expect(providers[13]).toEqual({
@@ -57,17 +57,19 @@ describe("provider directory", () => {
         { format: "anthropic", baseUrl: "https://opencode.ai/inference/go/anthropic" },
       ],
       modelLists: [
-        { url: "https://opencode.ai/zen/go/v1/models", format: "openai" },
-        { url: "https://modelslist.blp.sh/opencode-go/models", format: "modelslist" },
+        { url: "https://opencode.ai/zen/go/v1/models", format: "openai", source: "official" },
+        { url: "https://modelslist.blp.sh/opencode-go/models", format: "openai", source: "modelslist" },
       ],
     });
   });
 
   it("labels the ModelsList-curated endpoint for every provider", () => {
     for (const provider of providers) {
+      expect(provider.modelLists?.every(({ source }) => source === "official" || source === "modelslist")).toBe(true);
       expect(provider.modelLists).toContainEqual({
         url: `https://modelslist.blp.sh/${provider.slug}/models`,
-        format: "modelslist",
+        format: "openai",
+        source: "modelslist",
       });
     }
   });
@@ -116,10 +118,11 @@ describe("newly added providers", () => {
         : []),
     ]);
     expect(provider?.modelLists).toEqual([
-      { url: `${base}/models`, format: "openai" },
+      { url: `${base}/models`, format: "openai", source: "official" },
       {
         url: `https://modelslist.blp.sh/${provider?.slug}/models`,
-        format: "modelslist",
+        format: "openai",
+        source: "modelslist",
       },
     ]);
   });
