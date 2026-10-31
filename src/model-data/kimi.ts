@@ -2,8 +2,8 @@ import type { ModelDescriptor } from "../model-catalogs";
 
 export const models: ModelDescriptor[] = [
   {
-    "id": "kimi-k2.6",
-    "name": "kimi-k2.6",
+    "id": "k2.6",
+    "name": "k2.6",
     "architecture": {
       "input_modalities": [
         "text",
@@ -31,8 +31,8 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
-    "id": "kimi-k2.7-code",
-    "name": "kimi-k2.7-code",
+    "id": "k2.7-code",
+    "name": "k2.7-code",
     "architecture": {
       "input_modalities": [
         "text",
@@ -56,8 +56,8 @@ export const models: ModelDescriptor[] = [
     "reasoning_options": []
   },
   {
-    "id": "kimi-k2.7-code-highspeed",
-    "name": "kimi-k2.7-code-highspeed",
+    "id": "k2.7-code-highspeed",
+    "name": "k2.7-code-highspeed",
     "architecture": {
       "input_modalities": [
         "text",
@@ -81,8 +81,8 @@ export const models: ModelDescriptor[] = [
     "reasoning_options": []
   },
   {
-    "id": "kimi-k3",
-    "name": "kimi-k3",
+    "id": "k3",
+    "name": "k3",
     "architecture": {
       "input_modalities": [
         "text",
@@ -119,8 +119,8 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
-    "id": "kimi-k3.1-pro",
-    "name": "kimi-k3.1-pro",
+    "id": "k3.1-pro",
+    "name": "k3.1-pro",
     "architecture": {
       "input_modalities": [
         "text",
@@ -157,8 +157,8 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
-    "id": "kimi-k3.1-pro-highspeed",
-    "name": "kimi-k3.1-pro-highspeed",
+    "id": "k3.1-pro-highspeed",
+    "name": "k3.1-pro-highspeed",
     "architecture": {
       "input_modalities": [
         "text",

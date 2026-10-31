@@ -44,6 +44,13 @@ function expectedRows(slug: string): SourceRow[] {
   );
 }
 
+function exposedModelId(slug: string, sourceId: string): string {
+  if (slug === "kimi" && sourceId.startsWith("kimi-")) {
+    return sourceId.slice("kimi-".length);
+  }
+  return sourceId;
+}
+
 function validateModel(model: ModelDescriptor): void {
   expect(model.id).not.toBe("");
   expect(model.name).toBe(model.id);
@@ -94,6 +101,31 @@ describe("static model imports", () => {
     }
   });
 
+  it("uses callable Kimi model IDs without the kimi- prefix", () => {
+    const catalog = modelCatalogs.kimi;
+    expect(catalog.type).toBe("static");
+    if (catalog.type !== "static") return;
+    expect(catalog.models.map(({ id }) => id)).toEqual([
+      "k2.6",
+      "k2.7-code",
+      "k2.7-code-highspeed",
+      "k3",
+      "k3.1-pro",
+      "k3.1-pro-highspeed",
+    ]);
+    const codePlan = modelCatalogs["kimi-code-plan"];
+    expect(codePlan.type).toBe("static");
+    if (codePlan.type !== "static") return;
+    expect(codePlan.models.map(({ id }) => id)).toEqual([
+      "k3",
+      "k3-256k",
+      "k3.1-pro",
+      "k3.1-pro-highspeed",
+      "kimi-for-coding",
+      "kimi-for-coding-highspeed",
+    ]);
+  });
+
   it("keeps the original source row count unchanged", () => {
     expect(source.row_count).toBe(201);
     expect(source.models).toHaveLength(201);
@@ -108,7 +140,7 @@ describe("static model imports", () => {
 
       const expected = expectedRows(slug);
       expect(catalog.models.map(({ id }) => id)).toEqual(
-        expected.map((row) => row["모델 ID"]),
+        expected.map((row) => exposedModelId(slug, row["모델 ID"])),
       );
       expect(new Set(catalog.models.map(({ id }) => id)).size).toBe(catalog.models.length);
       catalog.models.forEach((model, index) => {

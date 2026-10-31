@@ -90,7 +90,7 @@ Only three catalogs are automatic:
 
 The static catalogs are built from `provider_models_slim.json`, which contains 201 source rows. Only rows marked `사용 가능` with complete, recognized metadata are included: 86 models across 14 providers. Records marked unsupported, deprecated, scheduled for retirement, indirectly auto-routed, needing verification, or containing `미확인`/`미공개` metadata are excluded. Source-only groups without registered provider endpoints, MiniMax Token Plan and Alibaba Token Plan Team, are not silently assigned to other providers.
 
-Each static file exports `ModelDescriptor[]` from `src/model-data/<provider-slug>.ts`. The model ID is used as the display name because the source has no separate display-name field; output modality is `text` for these text LLM records. Explicit reasoning efforts, on/off toggles, token budgets, mandatory/default behavior, and documented effort aliases are preserved without inventing unknown defaults. The source file remains unchanged for auditing and future imports.
+Each static file exports `ModelDescriptor[]` from `src/model-data/<provider-slug>.ts`. The model ID is used as the display name because the source has no separate display-name field; output modality is `text` for these text LLM records. Explicit reasoning efforts, on/off toggles, token budgets, mandatory/default behavior, and documented effort aliases are preserved without inventing unknown defaults. Kimi model IDs remove the leading `kimi-` used in the source, except `kimi-for-coding` and `kimi-for-coding-highspeed`, whose IDs are already in the correct callable form. The source file remains unchanged for auditing and future imports.
 
 ## Provider data
 
