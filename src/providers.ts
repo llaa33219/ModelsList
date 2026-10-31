@@ -174,4 +174,36 @@ export const providers: readonly Provider[] = [
       { url: "https://opencode.ai/zen/go/v1/models", format: "openai" },
     ],
   },
+  {
+    name: "LongCat",
+    formats: [
+      { format: "openai", baseUrl: "https://api.longcat.ai/openai/v1" },
+      { format: "openai-responses", baseUrl: "https://api.longcat.ai/openai/v1/responses" },
+      { format: "anthropic", baseUrl: "https://api.longcat.ai/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://api.longcat.ai/openai/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "Krafton Raon",
+    formats: [
+      { format: "openai", baseUrl: "https://raon-api.krafton.ai/v1" },
+      { format: "openai-responses", baseUrl: "https://raon-api.krafton.ai/v1/responses" },
+      { format: "anthropic", baseUrl: "https://raon-api.krafton.ai" },
+    ],
+    modelLists: [
+      { url: "https://raon-api.krafton.ai/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "NVIDIA NIM",
+    formats: [
+      { format: "openai", baseUrl: "https://integrate.api.nvidia.com/v1" },
+      { format: "openai-responses", baseUrl: "https://integrate.api.nvidia.com/v1/responses" },
+    ],
+    modelLists: [
+      { url: "https://integrate.api.nvidia.com/v1/models", format: "openai" },
+    ],
+  },
 ];

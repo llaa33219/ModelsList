@@ -2,7 +2,7 @@
 
 A minimal Cloudflare Worker that returns a hard-coded list of AI providers as JSON. There is no database, external API request, or HTML interface.
 
-The directory currently contains 14 hard-coded providers. The Worker does not contact those providers; it only returns their configured metadata.
+The directory currently contains 17 hard-coded providers. The Worker does not contact those providers; it only returns their configured metadata.
 
 ## Production
 

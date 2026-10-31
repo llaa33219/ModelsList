@@ -13,8 +13,8 @@ describe("provider directory", () => {
     expect(await response.json()).toEqual(providers);
   });
 
-  it("includes all 14 providers with their endpoints and formats", () => {
-    expect(providers).toHaveLength(14);
+  it("includes all 17 providers with their endpoints and formats", () => {
+    expect(providers).toHaveLength(17);
     expect(providers.map(({ name }) => name)).toEqual([
       "MiniMax",
       "Z.AI Coding Plan",
@@ -30,6 +30,9 @@ describe("provider directory", () => {
       "Step Plan",
       "OpenCode Zen",
       "OpenCode Go",
+      "LongCat",
+      "Krafton Raon",
+      "NVIDIA NIM",
     ]);
     expect(providers[0]).toEqual({
       name: "MiniMax",
@@ -69,5 +72,38 @@ describe("provider directory", () => {
 
     expect(response.status).toBe(405);
     expect(response.headers.get("Allow")).toBe("GET");
+  });
+});
+
+describe("newly added providers", () => {
+  it.each([
+    {
+      name: "LongCat",
+      base: "https://api.longcat.ai/openai/v1",
+      anthropicBase: "https://api.longcat.ai/anthropic",
+    },
+    {
+      name: "Krafton Raon",
+      base: "https://raon-api.krafton.ai/v1",
+      anthropicBase: "https://raon-api.krafton.ai",
+    },
+    {
+      name: "NVIDIA NIM",
+      base: "https://integrate.api.nvidia.com/v1",
+    },
+  ])("registers $name with the supplied URLs", ({ name, base, anthropicBase }) => {
+    const provider = providers.find((candidate) => candidate.name === name);
+
+    expect(provider).toBeDefined();
+    expect(provider?.formats).toEqual([
+      { format: "openai", baseUrl: base },
+      { format: "openai-responses", baseUrl: `${base}/responses` },
+      ...(anthropicBase
+        ? [{ format: "anthropic", baseUrl: anthropicBase }]
+        : []),
+    ]);
+    expect(provider?.modelLists).toEqual([
+      { url: `${base}/models`, format: "openai" },
+    ]);
   });
 });
