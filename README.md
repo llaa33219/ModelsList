@@ -1,8 +1,8 @@
 # AI Provider Directory
 
-A minimal Cloudflare Worker that returns a hard-coded list of AI providers as JSON. There is no database, external API request, or HTML interface.
+A minimal Cloudflare Worker that returns a hard-coded list of AI providers and OpenAI-compatible model catalogs. There is no database or HTML interface. Provider metadata requests are local; automatic model catalogs fetch their designated public upstream sources.
 
-The directory currently contains 17 hard-coded providers. The Worker does not contact those providers; it only returns their configured metadata.
+The directory currently contains 17 hard-coded providers. The Worker does not contact those providers when returning their configured metadata.
 
 ## Production
 
@@ -16,6 +16,7 @@ The provider directory is available at **https://modelslist.blp.sh/**. The sourc
 [
   {
     "name": "Example Provider",
+    "slug": "example-provider",
     "formats": [
       {
         "format": "openai",
@@ -36,6 +37,38 @@ The actual response contains all records from `src/providers.ts`; the record abo
 
 Unknown paths return `404 Not Found`. Methods other than `GET` return `405 Method Not Allowed`.
 
+
+## Model catalogs
+
+`GET /{provider-slug}/models` returns an OpenAI-compatible model list. For example, `GET /openrouter/models` returns:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "openai/gpt-example",
+      "object": "model",
+      "created": 1700000000,
+      "owned_by": "openrouter"
+    }
+  ]
+}
+```
+
+The example model ID is illustrative. `created` is `0` when the source does not provide a timestamp, and `owned_by` is the provider slug. A source failure returns HTTP `502` with a JSON error and is not cached. Automatic responses are cached per Cloudflare data center for five minutes. models.dev entries marked `deprecated` are excluded.
+
+Automatic catalogs use only these public sources:
+
+| Provider | Source |
+| --- | --- |
+| OpenRouter | `https://openrouter.ai/api/v1/models` |
+| OpenCode Zen | Only the `opencode` entry in `https://models.dev/api.json` |
+| OpenCode Go | Only the `opencode-go` entry in `https://models.dev/api.json` |
+| NVIDIA NIM | `https://assets.ngc.nvidia.com/products/api-catalog/featured-models.json` |
+
+**models.dev is deliberately not used for any other provider.** The other 13 providers use static catalogs in `src/model-catalogs.ts`; these initially return `{ "object": "list", "data": [] }` until model IDs are supplied. Source adapters and OpenAI response conversion live in `src/models.ts`.
+
 ## Provider data
 
 Edit `src/providers.ts` to add records to the `providers` array. Each record has this shape:
@@ -43,6 +76,7 @@ Edit `src/providers.ts` to add records to the `providers` array. Each record has
 ```ts
 {
   name: string;
+  slug: string;
   formats: Array<{
     format: string;
     baseUrl: string;
@@ -55,6 +89,7 @@ Edit `src/providers.ts` to add records to the `providers` array. Each record has
 ```
 
 - `name`: The provider's display name.
+- `slug`: The stable identifier used by the model catalog endpoint.
 - `formats`: One entry for each supported API compatibility format and its base URL.
 - `modelLists`: Optional model-list endpoints and their compatibility formats. Multiple endpoints can be supplied for providers that support more than one format.
 

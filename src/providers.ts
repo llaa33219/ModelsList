@@ -18,6 +18,7 @@ export interface ModelListEndpoint {
 
 export interface Provider {
   name: string;
+  slug: string;
   formats: ProviderFormat[];
   modelLists?: ModelListEndpoint[];
 }
@@ -25,6 +26,7 @@ export interface Provider {
 export const providers: readonly Provider[] = [
   {
     name: "MiniMax",
+    slug: "minimax",
     formats: [
       { format: "openai-responses", baseUrl: "https://api.minimax.io/v1/responses" },
       { format: "openai", baseUrl: "https://api.minimax.io/v1" },
@@ -37,6 +39,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Z.AI Coding Plan",
+    slug: "zai-coding-plan",
     formats: [
       { format: "anthropic", baseUrl: "https://api.z.ai/api/anthropic" },
       { format: "openai", baseUrl: "https://api.z.ai/api/coding/paas/v4" },
@@ -48,6 +51,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Kimi Code Plan",
+    slug: "kimi-code-plan",
     formats: [
       { format: "openai", baseUrl: "https://api.kimi.ai/coding/v1" },
       { format: "openai-responses", baseUrl: "https://api.kimi.ai/coding/v1/responses" },
@@ -59,6 +63,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Z.AI",
+    slug: "zai",
     formats: [
       { format: "openai", baseUrl: "https://api.z.ai/api/paas/v4" },
     ],
@@ -68,6 +73,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Kimi",
+    slug: "kimi",
     formats: [
       { format: "openai", baseUrl: "https://api.moonshot.ai/v1" },
       { format: "openai-responses", baseUrl: "https://api.moonshot.ai/v1/responses" },
@@ -79,6 +85,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Xiaomi Token Plan SGP",
+    slug: "xiaomi-token-plan-sgp",
     formats: [
       { format: "openai", baseUrl: "https://token-plan-sgp.xiaomimimo.com/v1" },
       { format: "anthropic", baseUrl: "https://token-plan-sgp.xiaomimimo.com/anthropic" },
@@ -89,6 +96,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Xiaomi MiMo",
+    slug: "xiaomi-mimo",
     formats: [
       { format: "openai", baseUrl: "https://api.xiaomimimo.com/v1" },
       { format: "openai-responses", baseUrl: "https://api.xiaomimimo.com/v1/responses" },
@@ -100,6 +108,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "OpenRouter",
+    slug: "openrouter",
     formats: [
       { format: "openai", baseUrl: "https://openrouter.ai/api/v1" },
       { format: "openai-responses", baseUrl: "https://openrouter.ai/api/v1/responses" },
@@ -111,6 +120,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "DeepSeek",
+    slug: "deepseek",
     formats: [
       { format: "openai", baseUrl: "https://api.deepseek.com" },
       { format: "anthropic", baseUrl: "https://api.deepseek.com/anthropic" },
@@ -122,6 +132,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Alibaba Token Plan Personal",
+    slug: "alibaba-token-plan-personal",
     formats: [
       { format: "openai", baseUrl: "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1" },
       { format: "anthropic", baseUrl: "https://token-plan.ap-southeast-1.maas.aliyuncs.com/apps/anthropic" },
@@ -132,6 +143,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "StepFun",
+    slug: "stepfun",
     formats: [
       { format: "openai", baseUrl: "https://api.stepfun.ai/v1" },
       { format: "anthropic", baseUrl: "https://api.stepfun.ai" },
@@ -143,6 +155,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Step Plan",
+    slug: "step-plan",
     formats: [
       { format: "openai", baseUrl: "https://api.stepfun.ai/step_plan/v1" },
       { format: "anthropic", baseUrl: "https://api.stepfun.ai/step_plan" },
@@ -153,6 +166,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "OpenCode Zen",
+    slug: "opencode-zen",
     formats: [
       { format: "openai", baseUrl: "https://opencode.ai/zen/v1" },
       { format: "openai-responses", baseUrl: "https://opencode.ai/zen/v1/responses" },
@@ -165,6 +179,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "OpenCode Go",
+    slug: "opencode-go",
     formats: [
       { format: "openai", baseUrl: "https://opencode.ai/inference/go/openai/v1" },
       { format: "openai-responses", baseUrl: "https://opencode.ai/inference/go/openai/v1/responses" },
@@ -176,6 +191,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "LongCat",
+    slug: "longcat",
     formats: [
       { format: "openai", baseUrl: "https://api.longcat.ai/openai/v1" },
       { format: "openai-responses", baseUrl: "https://api.longcat.ai/openai/v1/responses" },
@@ -187,6 +203,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "Krafton Raon",
+    slug: "krafton-raon",
     formats: [
       { format: "openai", baseUrl: "https://raon-api.krafton.ai/v1" },
       { format: "openai-responses", baseUrl: "https://raon-api.krafton.ai/v1/responses" },
@@ -198,6 +215,7 @@ export const providers: readonly Provider[] = [
   },
   {
     name: "NVIDIA NIM",
+    slug: "nvidia-nim",
     formats: [
       { format: "openai", baseUrl: "https://integrate.api.nvidia.com/v1" },
       { format: "openai-responses", baseUrl: "https://integrate.api.nvidia.com/v1/responses" },

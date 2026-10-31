@@ -36,6 +36,7 @@ describe("provider directory", () => {
     ]);
     expect(providers[0]).toEqual({
       name: "MiniMax",
+      slug: "minimax",
       formats: [
         { format: "openai-responses", baseUrl: "https://api.minimax.io/v1/responses" },
         { format: "openai", baseUrl: "https://api.minimax.io/v1" },
@@ -48,6 +49,7 @@ describe("provider directory", () => {
     });
     expect(providers[13]).toEqual({
       name: "OpenCode Go",
+      slug: "opencode-go",
       formats: [
         { format: "openai", baseUrl: "https://opencode.ai/inference/go/openai/v1" },
         { format: "openai-responses", baseUrl: "https://opencode.ai/inference/go/openai/v1/responses" },
