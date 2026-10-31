@@ -157,8 +157,8 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
-    "id": "kimi-for-coding",
-    "name": "kimi-for-coding",
+    "id": "for-coding",
+    "name": "for-coding",
     "architecture": {
       "input_modalities": [
         "text",
@@ -197,8 +197,8 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
-    "id": "kimi-for-coding-highspeed",
-    "name": "kimi-for-coding-highspeed",
+    "id": "for-coding-highspeed",
+    "name": "for-coding-highspeed",
     "architecture": {
       "input_modalities": [
         "text",

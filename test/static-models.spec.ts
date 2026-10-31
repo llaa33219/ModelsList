@@ -45,7 +45,7 @@ function expectedRows(slug: string): SourceRow[] {
 }
 
 function exposedModelId(slug: string, sourceId: string): string {
-  if (slug === "kimi" && sourceId.startsWith("kimi-")) {
+  if ((slug === "kimi" || slug === "kimi-code-plan") && sourceId.startsWith("kimi-")) {
     return sourceId.slice("kimi-".length);
   }
   return sourceId;
@@ -121,8 +121,8 @@ describe("static model imports", () => {
       "k3-256k",
       "k3.1-pro",
       "k3.1-pro-highspeed",
-      "kimi-for-coding",
-      "kimi-for-coding-highspeed",
+      "for-coding",
+      "for-coding-highspeed",
     ]);
   });
 
