@@ -28,6 +28,16 @@ export interface ModelReasoning {
   default_effort: string | null;
 }
 
+export type ReasoningOption =
+  | { type: "toggle" }
+  | {
+      type: "effort";
+      values: string[];
+      parameter?: "reasoning_effort" | "reasoning_strength";
+      aliases?: Record<string, string>;
+    }
+  | { type: "budget_tokens"; min?: number; max?: number };
+
 export interface ModelDescriptor {
   id: string;
   name: string;
@@ -35,7 +45,7 @@ export interface ModelDescriptor {
   context_length: number;
   top_provider: ModelTopProvider;
   reasoning: ModelReasoning;
-  reasoning_options: unknown[];
+  reasoning_options: ReasoningOption[];
   created?: number;
 }
 

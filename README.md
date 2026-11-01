@@ -52,7 +52,7 @@ Unknown paths return `404 Not Found`. Methods other than `GET` return `405 Metho
 - `context_length`: Context window in tokens.
 - `top_provider.max_completion_tokens`: Maximum output tokens, or `null` when unknown.
 - `reasoning`: `mandatory`, `default_enabled`, `supported_efforts`, and `default_effort`. A model without reasoning options has `supported_efforts: []` and `default_effort: null`.
-- `reasoning_options`: The original OpenCode reasoning controls, including effort values, toggles, and token budgets. OpenRouter entries use an empty array because its API provides normalized reasoning settings instead.
+- `reasoning_options`: Reasoning controls including effort values, toggles, and token budgets. OpenCode options are preserved from its source; OpenRouter entries use an empty array because its API provides normalized reasoning settings instead. An effort option may specify `parameter: "reasoning_strength"` instead of the default `reasoning_effort`, plus provider-specific effort aliases.
 
 ```json
 {
@@ -92,11 +92,11 @@ Only three catalogs are automatic:
 | OpenCode Zen | Only the `opencode` entry in `https://models.dev/api.json`, excluding deprecated models |
 | OpenCode Go | Only the `opencode-go` entry in `https://models.dev/api.json`, excluding deprecated models |
 
-**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. It and the other 13 providers use static/manual catalogs split into provider-specific files under `src/model-data/`.
+**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. Its static catalog uses the dedicated `nvidia_nim_chat_models.json` source instead. It and the other 13 providers use static/manual catalogs split into provider-specific files under `src/model-data/`.
 
-The static catalogs are built from `provider_models_slim.json`, which contains 201 source rows. Only rows marked `사용 가능` with complete, recognized metadata are included: 86 models across 14 providers. Records marked unsupported, deprecated, scheduled for retirement, indirectly auto-routed, needing verification, or containing `미확인`/`미공개` metadata are excluded. Source-only groups without registered provider endpoints, MiniMax Token Plan and Alibaba Token Plan Team, are not silently assigned to other providers.
+The static catalogs are built from `provider_models_slim.json`, which contains 201 source rows. Only rows marked `사용 가능` with complete, recognized metadata are included: 84 models across 14 providers. Records marked unsupported, deprecated, scheduled for retirement, indirectly auto-routed, needing verification, or containing `미확인`/`미공개` metadata are excluded. Source-only groups without registered provider endpoints, MiniMax Token Plan and Alibaba Token Plan Team, are not silently assigned to other providers.
 
-Each static file exports `ModelDescriptor[]` from `src/model-data/<provider-slug>.ts`. The model ID is used as the display name because the source has no separate display-name field; output modality is `text` for these text LLM records. Explicit reasoning efforts, on/off toggles, token budgets, mandatory/default behavior, and documented effort aliases are preserved without inventing unknown defaults. Kimi and Kimi Code Plan model IDs remove any leading `kimi-` used in the source, including `for-coding` and `for-coding-highspeed`. The source file remains unchanged for auditing and future imports.
+NIM includes 18 currently served chat models with complete context, output, modality, and reasoning metadata from its dedicated source; unknown, unserved, and retired NIM records are excluded. Its `model_name` field supplies display names. Each static file exports `ModelDescriptor[]` from `src/model-data/<provider-slug>.ts`. For the other 13 providers, the model ID is used as the display name because `provider_models_slim.json` has no separate display-name field; output modality is `text` for these text LLM records. Explicit reasoning efforts, on/off toggles, token budgets, mandatory/default behavior, and documented effort aliases are preserved without inventing unknown defaults. Kimi and Kimi Code Plan model IDs remove any leading `kimi-` used in the source, including `for-coding` and `for-coding-highspeed`. The source file remains unchanged for auditing and future imports.
 
 ## Provider data
 
