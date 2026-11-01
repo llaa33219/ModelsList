@@ -36,7 +36,9 @@ interface NvidiaSourceRow {
   model_id: string;
   model_name: string;
   context_tokens: number | string;
+  context_source: string;
   max_output_tokens: number | string;
+  max_output_source: string;
   input_modalities: string;
   output_modalities: string;
   reasoning: string;
@@ -50,14 +52,36 @@ const nvidiaSource = nvidiaSourceJson as {
   chat_models: NvidiaSourceRow[];
 };
 
+function nvidiaContextTokens(row: NvidiaSourceRow): number | null {
+  return typeof row.context_tokens === "number" ? row.context_tokens : null;
+}
+
+function nvidiaMaxOutputTokens(row: NvidiaSourceRow): number | null {
+  if (typeof row.max_output_tokens === "number") return row.max_output_tokens;
+  const context = nvidiaContextTokens(row);
+  return context !== null && row.max_output_source.includes("컨텍스트 윈도우가 실질 상한")
+    ? context
+    : null;
+}
+
+function nvidiaReasoningSupported(row: NvidiaSourceRow): boolean | null {
+  if (row.reasoning === "지원" || (row.reasoning === "미공개" &&
+      row.reasoning_control.trim() !== "" &&
+      !["미공개", "미확인"].includes(row.reasoning_control))) {
+    return true;
+  }
+  return row.reasoning === "미지원" ? false : null;
+}
+
 function expectedNvidiaRows(): NvidiaSourceRow[] {
   return nvidiaSource.chat_models.filter(
     (row) =>
       row.live_status === "정상 제공 (API 키 필요)" &&
       !row.eol_date &&
-      typeof row.context_tokens === "number" &&
-      typeof row.max_output_tokens === "number" &&
-      [row.input_modalities, row.output_modalities, row.reasoning, row.reasoning_control].every(
+      nvidiaContextTokens(row) !== null &&
+      nvidiaMaxOutputTokens(row) !== null &&
+      nvidiaReasoningSupported(row) !== null &&
+      [row.input_modalities, row.output_modalities].every(
         (value) => value !== "미공개" && value !== "미확인",
       ),
   );
@@ -160,7 +184,7 @@ describe("static model imports", () => {
 
   it("uses the cleaned NIM source and preserves its display names", () => {
     expect(nvidiaSource.chat_count).toBe(120);
-    expect(expectedNvidiaRows()).toHaveLength(18);
+    expect(expectedNvidiaRows()).toHaveLength(24);
     const catalog = modelCatalogs["nvidia-nim"];
     expect(catalog.type).toBe("static");
     if (catalog.type !== "static") return;
@@ -168,12 +192,31 @@ describe("static model imports", () => {
       "Mistral Large 4",
     );
     expect(catalog.models.map(({ id }) => id)).not.toContain("google/google-paligemma");
-    expect(catalog.models.map(({ id }) => id)).not.toContain("z-ai/glm-5.3-flash");
+    expect(catalog.models.map(({ id }) => id)).toContain("z-ai/glm-5.3-flash");
   });
 
   it("keeps the original source row count unchanged", () => {
     expect(source.row_count).toBe(201);
     expect(source.models).toHaveLength(201);
+  });
+
+  it("completes only the six NIM records backed by explicit source notes", () => {
+    const derivedOutputs = expectedNvidiaRows().filter(
+      (row) => typeof row.max_output_tokens !== "number",
+    );
+    expect(derivedOutputs.map(({ model_id }) => model_id)).toEqual([
+      "adept/fuyu-8b",
+      "microsoft/phi-3-vision-128k-instruct",
+      "nvidia/ising-calibration-1.5-31b",
+      "nvidia/nemotron-3.5-bolt-e4b",
+      "nvidia/nemotron-parse-2.0",
+    ]);
+    expect(derivedOutputs.map(({ context_source }) => context_source)).toEqual(
+      Array(5).fill("build 페이지 JSON (정확값)"),
+    );
+    expect(expectedNvidiaRows().filter((row) => row.reasoning === "미공개").map(
+      ({ model_id }) => model_id,
+    )).toEqual(["z-ai/glm-5.3-flash"]);
   });
 
   it.each(Object.keys(providerNames))(
@@ -193,11 +236,11 @@ describe("static model imports", () => {
           validateModel(model);
           const row = expected[index];
           expect(model.name).toBe(row.model_name);
-          expect(model.context_length).toBe(row.context_tokens);
-          expect(model.top_provider.max_completion_tokens).toBe(row.max_output_tokens);
+          expect(model.context_length).toBe(nvidiaContextTokens(row));
+          expect(model.top_provider.max_completion_tokens).toBe(nvidiaMaxOutputTokens(row));
           expect(model.architecture.input_modalities).toEqual(row.input_modalities.split(","));
           expect(model.architecture.output_modalities).toEqual(row.output_modalities.split(","));
-          expect(model.reasoning.default_enabled).toBe(row.reasoning === "지원");
+          expect(model.reasoning.default_enabled).toBe(nvidiaReasoningSupported(row));
           if (row.reasoning_control) {
             expect(model.reasoning_options.length).toBeGreaterThan(0);
             const match = /reasoning_(effort|strength)=([^\s(]+)/.exec(
@@ -214,7 +257,7 @@ describe("static model imports", () => {
                 ...(parameter === "reasoning_strength" ? { parameter } : {}),
               }),
             );
-            const defaultMatch = /\(기본(?:값)? ([^)]+)\)/.exec(
+            const defaultMatch = /\(기본(?:값)? ([^),\s]+)/.exec(
               row.reasoning_control,
             );
             expect(model.reasoning.default_effort).toBe(defaultMatch?.[1] ?? null);

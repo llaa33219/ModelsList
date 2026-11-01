@@ -2,6 +2,30 @@ import type { ModelDescriptor } from "../model-catalogs";
 
 export const models: ModelDescriptor[] = [
   {
+    "id": "adept/fuyu-8b",
+    "name": "fuyu-8b",
+    "architecture": {
+      "input_modalities": [
+        "text",
+        "image"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 16384,
+    "top_provider": {
+      "max_completion_tokens": 16384
+    },
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": false,
+      "supported_efforts": [],
+      "default_effort": null
+    },
+    "reasoning_options": []
+  },
+  {
     "id": "deepseek-ai/deepseek-v4.1-flash",
     "name": "deepseek-v4.1-flash",
     "architecture": {
@@ -210,6 +234,30 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
+    "id": "microsoft/phi-3-vision-128k-instruct",
+    "name": "phi-3-vision-128k-instruct",
+    "architecture": {
+      "input_modalities": [
+        "text",
+        "image"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 131072,
+    "top_provider": {
+      "max_completion_tokens": 131072
+    },
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": false,
+      "supported_efforts": [],
+      "default_effort": null
+    },
+    "reasoning_options": []
+  },
+  {
     "id": "minimaxai/minimax-m3.1-flash",
     "name": "minimax-m3.1-flash",
     "architecture": {
@@ -270,6 +318,30 @@ export const models: ModelDescriptor[] = [
     "reasoning": {
       "mandatory": true,
       "default_enabled": true,
+      "supported_efforts": [],
+      "default_effort": null
+    },
+    "reasoning_options": []
+  },
+  {
+    "id": "nvidia/ising-calibration-1.5-31b",
+    "name": "ising-calibration-1.5-31b",
+    "architecture": {
+      "input_modalities": [
+        "image",
+        "text"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 262144,
+    "top_provider": {
+      "max_completion_tokens": 262144
+    },
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": false,
       "supported_efforts": [],
       "default_effort": null
     },
@@ -348,6 +420,29 @@ export const models: ModelDescriptor[] = [
     "reasoning_options": []
   },
   {
+    "id": "nvidia/nemotron-3.5-bolt-e4b",
+    "name": "Nemotron 3.5 Bolt E4B",
+    "architecture": {
+      "input_modalities": [
+        "text"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 65536,
+    "top_provider": {
+      "max_completion_tokens": 65536
+    },
+    "reasoning": {
+      "mandatory": true,
+      "default_enabled": true,
+      "supported_efforts": [],
+      "default_effort": null
+    },
+    "reasoning_options": []
+  },
+  {
     "id": "nvidia/nemotron-3.5-content-safety",
     "name": "nemotron-3.5-content-safety",
     "architecture": {
@@ -410,6 +505,30 @@ export const models: ModelDescriptor[] = [
     "context_length": 1048576,
     "top_provider": {
       "max_completion_tokens": 1048576
+    },
+    "reasoning": {
+      "mandatory": true,
+      "default_enabled": true,
+      "supported_efforts": [],
+      "default_effort": null
+    },
+    "reasoning_options": []
+  },
+  {
+    "id": "nvidia/nemotron-parse-2.0",
+    "name": "nemotron-parse-2.0",
+    "architecture": {
+      "input_modalities": [
+        "image",
+        "text"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 9000,
+    "top_provider": {
+      "max_completion_tokens": 9000
     },
     "reasoning": {
       "mandatory": true,
@@ -511,6 +630,43 @@ export const models: ModelDescriptor[] = [
           "low",
           "medium",
           "high"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.3-flash",
+    "name": "glm-5.3-flash",
+    "architecture": {
+      "input_modalities": [
+        "text",
+        "image"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 1048576,
+    "top_provider": {
+      "max_completion_tokens": 131072
+    },
+    "reasoning": {
+      "mandatory": true,
+      "default_enabled": true,
+      "supported_efforts": [
+        "low",
+        "high",
+        "max"
+      ],
+      "default_effort": "max"
+    },
+    "reasoning_options": [
+      {
+        "type": "effort",
+        "values": [
+          "low",
+          "high",
+          "max"
         ]
       }
     ]
