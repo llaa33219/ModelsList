@@ -19,6 +19,8 @@ export interface ModelArchitecture {
 
 export interface ModelTopProvider {
   max_completion_tokens: number | null;
+  nim_endpoint_max_tokens?: number | null;
+  nim_endpoint_max_tokens_default?: number | null;
 }
 
 export interface ModelReasoning {
@@ -35,6 +37,7 @@ export type ReasoningOption =
       values: string[];
       parameter?: "reasoning_effort" | "reasoning_strength";
       aliases?: Record<string, string>;
+      numeric?: { min: number; max: number };
     }
   | { type: "budget_tokens"; min?: number; max?: number };
 

@@ -1,5 +1,6 @@
 import sourceJson from "../provider_models_slim.json";
-import nvidiaSourceJson from "../nvidia_nim_chat_models.json";
+import nvidiaSourceJson from "../nvidia_nim_official_chat.json";
+import previousNvidiaSourceJson from "../nvidia_nim_chat_models.json";
 import { describe, expect, it } from "vitest";
 import { modelCatalogs, type ModelDescriptor } from "../src/model-catalogs";
 
@@ -34,15 +35,15 @@ const source = sourceJson as { row_count: number; models: SourceRow[] };
 
 interface NvidiaSourceRow {
   model_id: string;
-  model_name: string;
+  model_name?: string;
   context_tokens: number | string;
-  context_source: string;
-  max_output_tokens: number | string;
-  max_output_source: string;
   input_modalities: string;
   output_modalities: string;
   reasoning: string;
   reasoning_control: string;
+  output_ceiling: number | string;
+  nim_endpoint_max_tokens: number | string;
+  nim_endpoint_max_tokens_default: number | string;
   live_status: string;
   eol_date: string;
 }
@@ -50,6 +51,18 @@ interface NvidiaSourceRow {
 const nvidiaSource = nvidiaSourceJson as {
   chat_count: number;
   chat_models: NvidiaSourceRow[];
+  all_models: NvidiaSourceRow[];
+};
+const previousNvidiaSource = previousNvidiaSourceJson as {
+  chat_models: Array<{
+    model_id: string;
+    model_name: string;
+    context_tokens: number | string;
+    input_modalities: string;
+    output_modalities: string;
+    reasoning: string;
+    reasoning_control: string;
+  }>;
 };
 
 function nvidiaContextTokens(row: NvidiaSourceRow): number | null {
@@ -57,34 +70,63 @@ function nvidiaContextTokens(row: NvidiaSourceRow): number | null {
 }
 
 function nvidiaMaxOutputTokens(row: NvidiaSourceRow): number | null {
-  if (typeof row.max_output_tokens === "number") return row.max_output_tokens;
-  const context = nvidiaContextTokens(row);
-  return context !== null && row.max_output_source.includes("컨텍스트 윈도우가 실질 상한")
-    ? context
-    : null;
+  return typeof row.output_ceiling === "number" ? row.output_ceiling : null;
 }
 
-function nvidiaReasoningSupported(row: NvidiaSourceRow): boolean | null {
-  if (row.reasoning === "지원" || (row.reasoning === "미공개" &&
-      row.reasoning_control.trim() !== "" &&
-      !["미공개", "미확인"].includes(row.reasoning_control))) {
-    return true;
-  }
-  return row.reasoning === "미지원" ? false : null;
+function nvidiaPreviousRow(row: NvidiaSourceRow) {
+  return previousNvidiaSource.chat_models.find(
+    (candidate) => candidate.model_id === row.model_id,
+  );
 }
 
-function expectedNvidiaRows(): NvidiaSourceRow[] {
-  return nvidiaSource.chat_models.filter(
-    (row) =>
+function nvidiaModalities(row: NvidiaSourceRow, direction: "input" | "output"): string[] {
+  const previous = nvidiaPreviousRow(row);
+  const value = direction === "input"
+    ? row.input_modalities.trim() || previous?.input_modalities || ""
+    : row.output_modalities.trim() || previous?.output_modalities || "";
+  const names: Record<string, string> = {
+    Text: "text", Image: "image", Video: "video", Audio: "audio",
+    PDF: "pdf", Json: "json", text: "text", image: "image", video: "video", audio: "audio",
+  };
+  return value.split(",").map((part) => names[part.trim()]);
+}
+
+function nvidiaDisplayName(row: NvidiaSourceRow): string {
+  return nvidiaPreviousRow(row)?.model_name ?? row.model_id;
+}
+
+function nvidiaReasoningControl(row: NvidiaSourceRow): string {
+  return row.reasoning_control || nvidiaPreviousRow(row)?.reasoning_control || "";
+}
+
+function nvidiaReasoningEnabled(row: NvidiaSourceRow): boolean {
+  return row.reasoning === "지원" ||
+    (row.reasoning === "미공개" && Boolean(row.reasoning_control)) ||
+    (row.reasoning === "미공개" && nvidiaPreviousRow(row)?.reasoning === "지원");
+}
+
+function expectedNvidiaRows(): Array<NvidiaSourceRow & { supplemental?: boolean }> {
+  const rows: Array<NvidiaSourceRow & { supplemental?: boolean }> = nvidiaSource.chat_models.filter((row) => {
+    const previous = nvidiaPreviousRow(row);
+    return (
       row.live_status === "정상 제공 (API 키 필요)" &&
       !row.eol_date &&
       nvidiaContextTokens(row) !== null &&
       nvidiaMaxOutputTokens(row) !== null &&
-      nvidiaReasoningSupported(row) !== null &&
-      [row.input_modalities, row.output_modalities].every(
-        (value) => value !== "미공개" && value !== "미확인",
-      ),
+      nvidiaModalities(row, "input").every(Boolean) &&
+      nvidiaModalities(row, "input").length > 0 &&
+      nvidiaModalities(row, "output").every(Boolean) &&
+      nvidiaModalities(row, "output").length > 0 &&
+      (row.reasoning === "지원" || row.reasoning === "미지원" ||
+        previous?.reasoning === "지원" || previous?.reasoning === "미지원" ||
+        Boolean(nvidiaReasoningControl(row)))
+    );
+  });
+  const supplemental = nvidiaSource.all_models.find(
+    ({ model_id }) => model_id === "nvidia/nemotron-parse-2.0",
   );
+  if (supplemental) rows.push({ ...supplemental, supplemental: true });
+  return rows.sort((a, b) => a.model_id.localeCompare(b.model_id));
 }
 
 function expectedRows(slug: string): SourceRow[] {
@@ -183,7 +225,7 @@ describe("static model imports", () => {
   });
 
   it("uses the cleaned NIM source and preserves its display names", () => {
-    expect(nvidiaSource.chat_count).toBe(120);
+    expect(nvidiaSource.chat_count).toBe(94);
     expect(expectedNvidiaRows()).toHaveLength(24);
     const catalog = modelCatalogs["nvidia-nim"];
     expect(catalog.type).toBe("static");
@@ -200,23 +242,14 @@ describe("static model imports", () => {
     expect(source.models).toHaveLength(201);
   });
 
-  it("completes only the six NIM records backed by explicit source notes", () => {
-    const derivedOutputs = expectedNvidiaRows().filter(
-      (row) => typeof row.max_output_tokens !== "number",
-    );
-    expect(derivedOutputs.map(({ model_id }) => model_id)).toEqual([
-      "adept/fuyu-8b",
-      "microsoft/phi-3-vision-128k-instruct",
-      "nvidia/ising-calibration-1.5-31b",
-      "nvidia/nemotron-3.5-bolt-e4b",
-      "nvidia/nemotron-parse-2.0",
-    ]);
-    expect(derivedOutputs.map(({ context_source }) => context_source)).toEqual(
-      Array(5).fill("build 페이지 JSON (정확값)"),
-    );
+  it("uses official NIM endpoint ceilings and explicit compatible supplements", () => {
+    expect(expectedNvidiaRows().filter((row) => !row.supplemental)).toHaveLength(23);
     expect(expectedNvidiaRows().filter((row) => row.reasoning === "미공개").map(
       ({ model_id }) => model_id,
     )).toEqual(["z-ai/glm-5.3-flash"]);
+    expect(expectedNvidiaRows().filter((row) => row.supplemental).map(
+      ({ model_id }) => model_id,
+    )).toEqual(["nvidia/nemotron-parse-2.0"]);
   });
 
   it.each(Object.keys(providerNames))(
@@ -235,20 +268,37 @@ describe("static model imports", () => {
         catalog.models.forEach((model, index) => {
           validateModel(model);
           const row = expected[index];
-          expect(model.name).toBe(row.model_name);
+          expect(model.name).toBe(nvidiaDisplayName(row));
           expect(model.context_length).toBe(nvidiaContextTokens(row));
           expect(model.top_provider.max_completion_tokens).toBe(nvidiaMaxOutputTokens(row));
-          expect(model.architecture.input_modalities).toEqual(row.input_modalities.split(","));
-          expect(model.architecture.output_modalities).toEqual(row.output_modalities.split(","));
-          expect(model.reasoning.default_enabled).toBe(nvidiaReasoningSupported(row));
-          if (row.reasoning_control) {
+          expect(model.architecture.input_modalities).toEqual(nvidiaModalities(row, "input"));
+          expect(model.architecture.output_modalities).toEqual(nvidiaModalities(row, "output"));
+          expect(model.reasoning.default_enabled).toBe(nvidiaReasoningEnabled(row));
+          expect(model.top_provider.nim_endpoint_max_tokens).toBe(
+            typeof row.nim_endpoint_max_tokens === "number"
+              ? row.nim_endpoint_max_tokens
+              : null,
+          );
+          expect(model.top_provider.nim_endpoint_max_tokens_default).toBe(
+            typeof row.nim_endpoint_max_tokens_default === "number"
+              ? row.nim_endpoint_max_tokens_default
+              : null,
+          );
+          if (nvidiaReasoningControl(row)) {
             expect(model.reasoning_options.length).toBeGreaterThan(0);
-            const match = /reasoning_(effort|strength)=([^\s(]+)/.exec(
-              row.reasoning_control,
+            const match = /reasoning_(effort|strength)(?:\s+수치형)?=([^\s(]+)|reasoning_(effort|strength)\s+수치형\s+(\d+~\d+)/.exec(
+              nvidiaReasoningControl(row),
             );
             expect(match).not.toBeNull();
-            const parameter = `reasoning_${match?.[1]}`;
-            const efforts = match?.[2].split("|");
+            const parameter = `reasoning_${match?.[1] ?? match?.[3]}`;
+            const effortsValue = match?.[2] ?? match?.[4];
+            const efforts = effortsValue?.includes("~")
+              ? effortsValue.split("~").flatMap((value, index, bounds) => {
+                  if (index === 1) return [];
+                  const [min, max] = bounds.map(Number);
+                  return Array.from({ length: max - min + 1 }, (_, i) => String(min + i));
+                })
+              : match?.[2].split("|");
             expect(model.reasoning.supported_efforts).toEqual(efforts);
             expect(model.reasoning_options).toContainEqual(
               expect.objectContaining({
@@ -258,9 +308,10 @@ describe("static model imports", () => {
               }),
             );
             const defaultMatch = /\(기본(?:값)? ([^),\s]+)/.exec(
-              row.reasoning_control,
+              nvidiaReasoningControl(row),
             );
             expect(model.reasoning.default_effort).toBe(defaultMatch?.[1] ?? null);
+            expect(model.reasoning.supported_efforts).toEqual(efforts);
             const hasToggle = model.reasoning_options.some(
               (option) => option.type === "toggle",
             );
