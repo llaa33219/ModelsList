@@ -237,9 +237,36 @@ describe("static model imports", () => {
     expect(catalog.models.map(({ id }) => id)).toContain("z-ai/glm-5.3-flash");
   });
 
-  it("keeps the original source row count unchanged", () => {
-    expect(source.row_count).toBe(201);
-    expect(source.models).toHaveLength(201);
+  it("preserves documented qwen4-max-preview preview limits and efforts", () => {
+    const catalog = modelCatalogs["alibaba-token-plan-personal"];
+    expect(catalog.type).toBe("static");
+    if (catalog.type !== "static") return;
+    const model = catalog.models.find(({ id }) => id === "qwen4-max-preview");
+    expect(model).toEqual({
+      id: "qwen4-max-preview",
+      name: "qwen4-max-preview",
+      architecture: {
+        input_modalities: ["text", "image", "video"],
+        output_modalities: ["text"],
+      },
+      context_length: 1000000,
+      top_provider: { max_completion_tokens: 393216 },
+      reasoning: {
+        mandatory: false,
+        default_enabled: true,
+        supported_efforts: ["low", "medium", "xhigh"],
+        default_effort: "xhigh",
+      },
+      reasoning_options: [
+        { type: "effort", values: ["low", "medium", "xhigh"] },
+        { type: "toggle" },
+      ],
+    });
+  });
+
+  it("tracks the audited source row count", () => {
+    expect(source.row_count).toBe(202);
+    expect(source.models).toHaveLength(202);
   });
 
   it("uses official NIM endpoint ceilings and explicit compatible supplements", () => {

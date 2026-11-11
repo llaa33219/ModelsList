@@ -439,5 +439,46 @@ export const models: ModelDescriptor[] = [
         "type": "toggle"
       }
     ]
+  },
+  {
+    "id": "qwen4-max-preview",
+    "name": "qwen4-max-preview",
+    "architecture": {
+      "input_modalities": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output_modalities": [
+        "text"
+      ]
+    },
+    "context_length": 1000000,
+    "top_provider": {
+      "max_completion_tokens": 393216
+    },
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": true,
+      "supported_efforts": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "default_effort": "xhigh"
+    },
+    "reasoning_options": [
+      {
+        "type": "effort",
+        "values": [
+          "low",
+          "medium",
+          "xhigh"
+        ]
+      },
+      {
+        "type": "toggle"
+      }
+    ]
   }
 ];
