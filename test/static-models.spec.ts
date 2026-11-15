@@ -264,9 +264,33 @@ describe("static model imports", () => {
     });
   });
 
+  it("registers LongCat-2.5 and retires the preview", () => {
+    const catalog = modelCatalogs.longcat;
+    expect(catalog.type).toBe("static");
+    if (catalog.type !== "static") return;
+    expect(catalog.models.map(({ id }) => id)).toEqual(["LongCat-2.0", "LongCat-2.5"]);
+    expect(catalog.models.find(({ id }) => id === "LongCat-2.5")).toEqual({
+      id: "LongCat-2.5",
+      name: "LongCat-2.5",
+      architecture: {
+        input_modalities: ["text", "image", "video"],
+        output_modalities: ["text"],
+      },
+      context_length: 1048576,
+      top_provider: { max_completion_tokens: 262144 },
+      reasoning: {
+        mandatory: false,
+        default_enabled: true,
+        supported_efforts: [],
+        default_effort: null,
+      },
+      reasoning_options: [{ type: "toggle" }],
+    });
+  });
+
   it("tracks the audited source row count", () => {
-    expect(source.row_count).toBe(202);
-    expect(source.models).toHaveLength(202);
+    expect(source.row_count).toBe(203);
+    expect(source.models).toHaveLength(203);
   });
 
   it("uses official NIM endpoint ceilings and explicit compatible supplements", () => {

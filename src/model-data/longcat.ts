@@ -29,12 +29,13 @@ export const models: ModelDescriptor[] = [
     ]
   },
   {
-    "id": "LongCat-2.5-Preview",
-    "name": "LongCat-2.5-Preview",
+    "id": "LongCat-2.5",
+    "name": "LongCat-2.5",
     "architecture": {
       "input_modalities": [
         "text",
-        "image"
+        "image",
+        "video"
       ],
       "output_modalities": [
         "text"
@@ -42,7 +43,7 @@ export const models: ModelDescriptor[] = [
     },
     "context_length": 1048576,
     "top_provider": {
-      "max_completion_tokens": 131072
+      "max_completion_tokens": 262144
     },
     "reasoning": {
       "mandatory": false,
