@@ -264,6 +264,34 @@ describe("static model imports", () => {
     });
   });
 
+  it("preserves documented qwen4-max limits and efforts", () => {
+    const catalog = modelCatalogs["alibaba-token-plan-personal"];
+    expect(catalog.type).toBe("static");
+    if (catalog.type !== "static") return;
+    const model = catalog.models.find(({ id }) => id === "qwen4-max");
+    expect(model).toEqual({
+      id: "qwen4-max",
+      name: "qwen4-max",
+      architecture: {
+        input_modalities: ["text", "image", "video"],
+        output_modalities: ["text"],
+      },
+      context_length: 1000000,
+      top_provider: { max_completion_tokens: 262144 },
+      reasoning: {
+        mandatory: false,
+        default_enabled: true,
+        supported_efforts: ["low", "high", "xhigh"],
+        default_effort: "high",
+      },
+      reasoning_options: [
+        { type: "effort", values: ["low", "high", "xhigh"], aliases: { minimal: "low", medium: "high", max: "xhigh" } },
+        { type: "toggle" },
+        { type: "budget_tokens", max: 131072 },
+      ],
+    });
+  });
+
   it("registers LongCat-2.5 and retires the preview", () => {
     const catalog = modelCatalogs.longcat;
     expect(catalog.type).toBe("static");
@@ -289,8 +317,8 @@ describe("static model imports", () => {
   });
 
   it("tracks the audited source row count", () => {
-    expect(source.row_count).toBe(203);
-    expect(source.models).toHaveLength(203);
+    expect(source.row_count).toBe(204);
+    expect(source.models).toHaveLength(204);
   });
 
   it("uses official NIM endpoint ceilings and explicit compatible supplements", () => {

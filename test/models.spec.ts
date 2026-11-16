@@ -23,12 +23,12 @@ describe("model catalogs", () => {
     );
   });
 
-  it("contains 91 confirmed static models split by provider", () => {
+  it("contains 92 confirmed static models split by provider", () => {
     const staticCatalogs = Object.values(modelCatalogs).filter(
       (catalog) => catalog.type === "static",
     );
     expect(staticCatalogs).toHaveLength(14);
-    expect(staticCatalogs.flatMap((catalog) => catalog.models)).toHaveLength(91);
+    expect(staticCatalogs.flatMap((catalog) => catalog.models)).toHaveLength(92);
   });
 
   it("returns complete OpenRouter model metadata", async () => {
