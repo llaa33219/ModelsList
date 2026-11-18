@@ -12,6 +12,14 @@ import { models as step_plan_models } from "./model-data/step-plan";
 import { models as longcat_models } from "./model-data/longcat";
 import { models as krafton_raon_models } from "./model-data/krafton-raon";
 import { models as nvidia_nim_models } from "./model-data/nvidia-nim";
+import { models as qwencloud_token_plan_personal_models } from "./model-data/qwencloud-token-plan-personal";
+import { models as qwencloud_token_plan_team_models } from "./model-data/qwencloud-token-plan-team";
+import { models as qwencloud_payg_ap_southeast_1_models } from "./model-data/qwencloud-payg-ap-southeast-1";
+import { models as qwencloud_payg_cn_beijing_models } from "./model-data/qwencloud-payg-cn-beijing";
+import { models as qwencloud_payg_eu_central_1_models } from "./model-data/qwencloud-payg-eu-central-1";
+import { models as qwencloud_payg_cn_hongkong_models } from "./model-data/qwencloud-payg-cn-hongkong";
+import { models as qwencloud_payg_ap_northeast_1_models } from "./model-data/qwencloud-payg-ap-northeast-1";
+import { models as qwencloud_payg_us_east_1_models } from "./model-data/qwencloud-payg-us-east-1";
 export interface ModelArchitecture {
   input_modalities: string[];
   output_modalities: string[];
@@ -71,7 +79,8 @@ const staticCatalog = (models: ModelDescriptor[]): StaticCatalog => ({
   models,
 });
 
-// Static catalogs contain only confirmed, complete records from provider_models_slim.json.
+// Static catalogs contain only confirmed, complete records from provider_models_slim.json;
+// the QwenCloud catalogs are sourced from docs.qwencloud.com instead.
 // models.dev is used only for the two OpenCode-owned catalogs below.
 export const modelCatalogs: Readonly<Record<string, ModelCatalog>> = {
   minimax: staticCatalog(minimax_models),
@@ -105,4 +114,12 @@ export const modelCatalogs: Readonly<Record<string, ModelCatalog>> = {
   longcat: staticCatalog(longcat_models),
   "krafton-raon": staticCatalog(krafton_raon_models),
   "nvidia-nim": staticCatalog(nvidia_nim_models),
+  "qwencloud-token-plan-personal": staticCatalog(qwencloud_token_plan_personal_models),
+  "qwencloud-token-plan-team": staticCatalog(qwencloud_token_plan_team_models),
+  "qwencloud-payg-ap-southeast-1": staticCatalog(qwencloud_payg_ap_southeast_1_models),
+  "qwencloud-payg-cn-beijing": staticCatalog(qwencloud_payg_cn_beijing_models),
+  "qwencloud-payg-eu-central-1": staticCatalog(qwencloud_payg_eu_central_1_models),
+  "qwencloud-payg-cn-hongkong": staticCatalog(qwencloud_payg_cn_hongkong_models),
+  "qwencloud-payg-ap-northeast-1": staticCatalog(qwencloud_payg_ap_northeast_1_models),
+  "qwencloud-payg-us-east-1": staticCatalog(qwencloud_payg_us_east_1_models),
 };

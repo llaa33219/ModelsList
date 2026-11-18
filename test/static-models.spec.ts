@@ -260,6 +260,7 @@ describe("static model imports", () => {
       reasoning_options: [
         { type: "effort", values: ["low", "medium", "xhigh"] },
         { type: "toggle" },
+        { type: "budget_tokens" },
       ],
     });
   });
@@ -287,7 +288,7 @@ describe("static model imports", () => {
       reasoning_options: [
         { type: "effort", values: ["low", "high", "xhigh"], aliases: { minimal: "low", medium: "high", max: "xhigh" } },
         { type: "toggle" },
-        { type: "budget_tokens", max: 131072 },
+        { type: "budget_tokens", max: 262144 },
       ],
     });
   });

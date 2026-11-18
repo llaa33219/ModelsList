@@ -229,6 +229,110 @@ const providerEndpoints: readonly ProviderEndpoint[] = [
       { url: "https://integrate.api.nvidia.com/v1/models", format: "openai" },
     ],
   },
+  {
+    name: "QwenCloud Token Plan Personal (Singapore)",
+    slug: "qwencloud-token-plan-personal",
+    formats: [
+      { format: "openai", baseUrl: "https://token-plan.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://token-plan.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://token-plan.maas.qwencloudapi.com/apps/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://token-plan.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+      { url: "https://token-plan.maas.qwencloudapi.com/apps/anthropic/v1/models", format: "anthropic" },
+    ],
+  },
+  {
+    // Same endpoint as the Personal plan; the plan is identified by the API key.
+    name: "QwenCloud Token Plan Team (Singapore)",
+    slug: "qwencloud-token-plan-team",
+    formats: [
+      { format: "openai", baseUrl: "https://token-plan.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://token-plan.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://token-plan.maas.qwencloudapi.com/apps/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://token-plan.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+      { url: "https://token-plan.maas.qwencloudapi.com/apps/anthropic/v1/models", format: "anthropic" },
+    ],
+  },
+  {
+    // The typesafe format is exposed only in the two decision-model regions
+    // (Singapore and Beijing). The payg anthropic endpoints expose no
+    // /v1/models (verified 404), so only the OpenAI-compatible list is used.
+    name: "QwenCloud Pay-as-you-go (Singapore)",
+    slug: "qwencloud-payg-ap-southeast-1",
+    formats: [
+      { format: "openai", baseUrl: "https://ap-southeast-1.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://ap-southeast-1.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://ap-southeast-1.maas.qwencloudapi.com/apps/anthropic" },
+      { format: "typesafe", baseUrl: "https://ap-southeast-1.maas.qwencloudapi.com/compatible-mode/v1/systemone" },
+    ],
+    modelLists: [
+      { url: "https://ap-southeast-1.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "QwenCloud Pay-as-you-go (Beijing)",
+    slug: "qwencloud-payg-cn-beijing",
+    formats: [
+      { format: "openai", baseUrl: "https://cn-beijing.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://cn-beijing.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://cn-beijing.maas.qwencloudapi.com/apps/anthropic" },
+      { format: "typesafe", baseUrl: "https://cn-beijing.maas.qwencloudapi.com/compatible-mode/v1/systemone" },
+    ],
+    modelLists: [
+      { url: "https://cn-beijing.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "QwenCloud Pay-as-you-go (Frankfurt)",
+    slug: "qwencloud-payg-eu-central-1",
+    formats: [
+      { format: "openai", baseUrl: "https://eu-central-1.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://eu-central-1.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://eu-central-1.maas.qwencloudapi.com/apps/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://eu-central-1.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "QwenCloud Pay-as-you-go (Hong Kong)",
+    slug: "qwencloud-payg-cn-hongkong",
+    formats: [
+      { format: "openai", baseUrl: "https://cn-hongkong.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://cn-hongkong.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://cn-hongkong.maas.qwencloudapi.com/apps/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://cn-hongkong.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "QwenCloud Pay-as-you-go (Tokyo)",
+    slug: "qwencloud-payg-ap-northeast-1",
+    formats: [
+      { format: "openai", baseUrl: "https://ap-northeast-1.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://ap-northeast-1.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://ap-northeast-1.maas.qwencloudapi.com/apps/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://ap-northeast-1.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+    ],
+  },
+  {
+    name: "QwenCloud Pay-as-you-go (Virginia)",
+    slug: "qwencloud-payg-us-east-1",
+    formats: [
+      { format: "openai", baseUrl: "https://us-east-1.maas.qwencloudapi.com/compatible-mode/v1" },
+      { format: "openai-responses", baseUrl: "https://us-east-1.maas.qwencloudapi.com/compatible-mode/v1/responses" },
+      { format: "anthropic", baseUrl: "https://us-east-1.maas.qwencloudapi.com/apps/anthropic" },
+    ],
+    modelLists: [
+      { url: "https://us-east-1.maas.qwencloudapi.com/compatible-mode/v1/models", format: "openai" },
+    ],
+  },
 ];
 
 // ModelsList-curated endpoints use OpenAI-compatible envelopes with additional

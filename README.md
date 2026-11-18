@@ -2,7 +2,7 @@
 
 A minimal Cloudflare Worker that returns a hard-coded list of AI providers and OpenAI-compatible model catalogs. There is no database or HTML interface. Provider metadata requests are local; automatic model catalogs fetch their designated public upstream sources.
 
-The directory currently contains 17 hard-coded providers. The Worker does not contact those providers when returning their configured metadata.
+The directory currently contains 25 hard-coded providers. The Worker does not contact those providers when returning their configured metadata.
 
 ## Production
 
@@ -92,11 +92,23 @@ Only three catalogs are automatic:
 | OpenCode Zen | Only the `opencode` entry in `https://models.dev/api.json`, excluding deprecated models |
 | OpenCode Go | Only the `opencode-go` entry in `https://models.dev/api.json`, excluding deprecated models |
 
-**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. Its static catalog primarily uses `nvidia_nim_official_chat.json`, with `nvidia_nim_chat_models.json` retained only for explicit compatible metadata supplements. It and the other 13 providers use static/manual catalogs split into provider-specific files under `src/model-data/`.
+**models.dev is deliberately not used for any other provider.** NVIDIA NIM does not use the featured-model marketing asset. Its static catalog primarily uses `nvidia_nim_official_chat.json`, with `nvidia_nim_chat_models.json` retained only for explicit compatible metadata supplements. It and the other 13 providers use static/manual catalogs split into provider-specific files under `src/model-data/`. QwenCloud adds eight more static catalogs (two Token Plans and six pay-as-you-go regions), sourced from docs.qwencloud.com — model pages, the model-prices region tables, the thinking guide and the API references — rather than `provider_models_slim.json`.
 
 The static catalogs use `provider_models_slim.json` for 13 providers and the dedicated NIM source for NVIDIA NIM. The former contains 204 source rows. Only rows marked `사용 가능` with complete, recognized metadata are included: 92 models across 14 providers. Records marked unsupported, deprecated, scheduled for retirement, indirectly auto-routed, needing verification, or containing `미확인`/`미공개` metadata are excluded. Source-only groups without registered provider endpoints, MiniMax Token Plan and Alibaba Token Plan Team, are not silently assigned to other providers.
 
 NIM includes 24 currently served chat models with complete metadata: 23 from the official chat list plus `nemotron-parse-2.0` from the official source's complete `all_models` row. The effective output limit uses `output_ceiling`, which accounts for the actual NIM endpoint cap rather than only a vendor's theoretical model limit. `top_provider.nim_endpoint_max_tokens` and `nim_endpoint_max_tokens_default` preserve the published endpoint maximum and default separately, using `null` when unknown. The previous curated source supplies explicit reasoning controls or display names only when the official file omits them; unknown, unserved, and retired NIM records remain excluded. Each static file exports `ModelDescriptor[]` from `src/model-data/<provider-slug>.ts`. For the other 13 providers, the model ID is used as the display name because `provider_models_slim.json` has no separate display-name field; output modality is `text` for these text LLM records. Explicit reasoning efforts, on/off toggles, token budgets, mandatory/default behavior, and documented effort aliases are preserved without inventing unknown defaults. Kimi and Kimi Code Plan model IDs remove any leading `kimi-` used in the source, including `for-coding` and `for-coding-highspeed`. The source file remains unchanged for auditing and future imports.
+
+### QwenCloud maintenance map
+
+The eight QwenCloud catalogs (`qwencloud-token-plan-personal`, `qwencloud-token-plan-team`, and the six `qwencloud-payg-<region>` slugs) are ID lists over one shared descriptor map in `src/model-data/qwencloud-shared.ts`. When the QwenCloud docs change a model, update the shared descriptor once; every catalog containing that ID picks it up.
+
+- `qwen3.7-max`, `qwen4-max` and `qwen4-max-preview` are single-sourced from the Alibaba Token Plan Personal catalog: update them in `src/model-data/alibaba-token-plan-personal.ts`, not in `qwencloud-shared.ts`.
+- `kimi-k2.5`/`kimi-k2.6`/`kimi-k2.7-code` output totals follow the Alibaba Token Plan Team slim rows.
+- Region membership follows the model-prices page region tabs (`region-membership.json`); Token Plan membership follows the plan overview pages.
+- `qwen-flash-character` is split by region: Beijing and Virginia use 8192 context / 4096 output; every other region uses 32768/32768.
+- `qwen-plus-character` is split by region: Singapore uses 131072 context; Beijing, Frankfurt, Hong Kong, Tokyo and Virginia use 32768 (output 32768 everywhere).
+- The Alibaba catalog's `qwen4-max`/`qwen4-max-preview`/`qwen3.7-max` budget fields were corrected per the QwenCloud docs (`qwen4-max` max 262144; preview budget settable with no documented max; `qwen3.7-max` matches its snapshots at 262144) — these descriptors are shared by every QwenCloud catalog that lists them.
+- `qwen4-max-preview` is a Token-Plan-only preview; it retires after the 2026-11-25 preview window.
 
 ## Provider data
 

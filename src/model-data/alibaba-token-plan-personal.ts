@@ -325,7 +325,8 @@ export const models: ModelDescriptor[] = [
         "type": "toggle"
       },
       {
-        "type": "budget_tokens"
+        "type": "budget_tokens",
+        "max": 262144
       }
     ]
   },
@@ -478,6 +479,9 @@ export const models: ModelDescriptor[] = [
       },
       {
         "type": "toggle"
+      },
+      {
+        "type": "budget_tokens"
       }
     ]
   },
@@ -527,7 +531,7 @@ export const models: ModelDescriptor[] = [
       },
       {
         "type": "budget_tokens",
-        "max": 131072
+        "max": 262144
       }
     ]
   }

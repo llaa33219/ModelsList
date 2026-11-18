@@ -13,8 +13,8 @@ describe("provider directory", () => {
     expect(await response.json()).toEqual(providers);
   });
 
-  it("includes all 17 providers with their endpoints and formats", () => {
-    expect(providers).toHaveLength(17);
+  it("includes all 25 providers with their endpoints and formats", () => {
+    expect(providers).toHaveLength(25);
     expect(providers.map(({ name }) => name)).toEqual([
       "MiniMax",
       "Z.AI Coding Plan",
@@ -33,6 +33,14 @@ describe("provider directory", () => {
       "LongCat",
       "Krafton Raon",
       "NVIDIA NIM",
+      "QwenCloud Token Plan Personal (Singapore)",
+      "QwenCloud Token Plan Team (Singapore)",
+      "QwenCloud Pay-as-you-go (Singapore)",
+      "QwenCloud Pay-as-you-go (Beijing)",
+      "QwenCloud Pay-as-you-go (Frankfurt)",
+      "QwenCloud Pay-as-you-go (Hong Kong)",
+      "QwenCloud Pay-as-you-go (Tokyo)",
+      "QwenCloud Pay-as-you-go (Virginia)",
     ]);
     expect(providers[0]).toEqual({
       name: "MiniMax",
